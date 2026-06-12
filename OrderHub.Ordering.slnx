@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="OrderHub.Ordering.Infrastructure/OrderHub.Ordering.Infrastructure.csproj" />
+  <Project Path="OrderHub.Ordering.Tests/OrderHub.Ordering.Tests.csproj" />
+  <Project Path="OrderHub.Ordering/OrderHub.Ordering.csproj" />
+</Solution>
