@@ -2,4 +2,5 @@
   <Project Path="OrderHub.Ordering.Infrastructure/OrderHub.Ordering.Infrastructure.csproj" />
   <Project Path="OrderHub.Ordering.Tests/OrderHub.Ordering.Tests.csproj" />
   <Project Path="OrderHub.Ordering/OrderHub.Ordering.csproj" />
+  <Project Path="OrderHub.Web/OrderHub.Web.csproj" Id="6815d6a9-6555-4b9a-8796-b3cce5e93357" />
 </Solution>

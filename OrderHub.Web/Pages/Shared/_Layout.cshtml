@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OrderHub</title>
+    <style>
+            body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
+            .subtotal { font-size: 1.125rem; font-weight: 600; }
+            .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+            .validation-summary-errors, .field-validation-error { color: #b00020; }
+    </style>
+</head>
+<body>
+    <main>
+        @RenderBody()
+    </main>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

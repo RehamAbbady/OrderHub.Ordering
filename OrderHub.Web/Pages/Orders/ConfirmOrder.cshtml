@@ -1,0 +1,47 @@
+﻿@page "{orderId:int}"
+@model OrderHub.Web.Pages.Orders.ConfirmOrderModel
+@using System.Globalization
+@{
+    var gb = CultureInfo.GetCultureInfo("en-GB");
+}
+
+<h1>Order for @Model.SchoolName</h1>
+
+<div asp-validation-summary="ModelOnly"></div>
+
+<form method="post" id="order-form">
+    <table>
+        <thead>
+            <tr><th>Item</th><th>Qty</th><th>Line total</th></tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.Lines.Count; i++)
+            {
+                var id = Model.Lines[i].Id;
+                var view = Model.LineViews[id];
+                var pence = (int)decimal.Round(view.UnitPrice * 100m);
+
+                <tr data-line data-unit-pence="@pence">
+                    <td>
+                        <input type="hidden" asp-for="Lines[i].Id" />
+                        @view.Sku@(string.IsNullOrEmpty(view.Embroidery) ? "" : $" — {view.Embroidery}")
+                    </td>
+                    <td>
+                        <label class="visually-hidden" asp-for="Lines[i].Quantity">Quantity</label>
+                        <input asp-for="Lines[i].Quantity" type="number" min="1" inputmode="numeric" />
+                        <span asp-validation-for="Lines[i].Quantity"></span>
+                    </td>
+                    <td><span data-line-total>@((view.UnitPrice * Model.Lines[i].Quantity).ToString("C", gb))</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="subtotal">Subtotal: <span id="subtotal">@Model.Subtotal.ToString("C", gb)</span></p>
+
+    <button type="submit">Confirm order</button>
+</form>
+
+@section Scripts {
+    <script src="~/js/confirm-order.js" asp-append-version="true"></script>
+}
