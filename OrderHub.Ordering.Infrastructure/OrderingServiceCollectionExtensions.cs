@@ -28,7 +28,13 @@ namespace OrderHub.Ordering.Infrastructure
             services.AddScoped<IInventory, Inventory>();
             services.AddScoped<IOrderProcessor, OrderProcessor>();
 
-            services.AddOptions<OrderingOptions>().Configure(configure);
+            services.AddOptions<OrderingOptions>()
+                .Configure(configure)
+                .Validate(o => !string.IsNullOrWhiteSpace(o.ConnectionString),
+                    "OrderingOptions.ConnectionString is required")
+                .Validate(o => Uri.IsWellFormedUriString(o.PaymentBaseUrl, UriKind.Absolute),
+                    "OrderingOptions.PaymentBaseUrl must be an absolute URI")
+                .ValidateOnStart();
 
             services.AddHttpClient<IPaymentGateway, HttpPaymentGateway>()
                 .ConfigureHttpClient((sp, client) =>

@@ -37,6 +37,13 @@ namespace OrderHub.Ordering.Orders
 
         public async Task<OrderResult> ProcessAsync(OrderRequest request, CancellationToken ct = default)
         {
+            if (request.Lines.Count == 0)
+                return OrderResult.Failure(OrderFailureReason.InvalidRequest, "no order lines");
+
+            var invalidLine = request.Lines.FirstOrDefault(l => l.Quantity <= 0);
+            if (invalidLine is not null)
+                return OrderResult.Failure(OrderFailureReason.InvalidRequest, invalidLine.Sku);
+
             var tier = await _schools.GetTierCodeAsync(request.SchoolId, ct);
             if (tier is null)
                 return OrderResult.Failure(OrderFailureReason.SchoolNotFound);
@@ -45,13 +52,17 @@ namespace OrderHub.Ordering.Orders
             var prices = await _catalog.GetBasePricesAsync(skus, ct);
             var stock = await _inventory.GetStockAsync(skus, ct);
 
-            foreach (var line in request.Lines)
-            {
-                if (!prices.ContainsKey(line.Sku))
-                    return OrderResult.Failure(OrderFailureReason.ProductNotFound, line.Sku);
+            var requiredQty = request.Lines
+                .GroupBy(l => l.Sku)
+                .ToDictionary(g => g.Key, g => g.Sum(l => l.Quantity));
 
-                if (!stock.TryGetValue(line.Sku, out var available) || available < line.Quantity)
-                    return OrderResult.Failure(OrderFailureReason.OutOfStock, line.Sku);
+            foreach (var sku in skus)
+            {
+                if (!prices.ContainsKey(sku))
+                    return OrderResult.Failure(OrderFailureReason.ProductNotFound, sku);
+
+                if (!stock.TryGetValue(sku, out var available) || available < requiredQty[sku])
+                    return OrderResult.Failure(OrderFailureReason.OutOfStock, sku);
             }
 
             var subtotal = request.Lines.Sum(line =>

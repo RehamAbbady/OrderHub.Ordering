@@ -170,4 +170,58 @@ public class OrderProcessorTests
         Assert.True(result.Succeeded);
         Assert.Equal(35.10m, result.Subtotal);
     }
+
+    [Fact]
+    public async Task Duplicate_skus_are_summed_against_stock_and_never_oversell()
+    {
+        _inventory
+            .Setup(i => i.GetStockAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, int> { ["BLZ"] = 5 });
+
+        var result = await BuildSut().ProcessAsync(Request(
+            new OrderLine("BLZ", 3),
+            new OrderLine("BLZ", 3)));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OrderFailureReason.OutOfStock, result.Reason);
+        Assert.Equal("BLZ", result.Detail);
+        VerifyNeverCharged();
+    }
+
+    [Fact]
+    public async Task Duplicate_skus_within_stock_charge_the_combined_quantity()
+    {
+        var result = await BuildSut().ProcessAsync(Request(
+            new OrderLine("BLZ", 3),
+            new OrderLine("BLZ", 2)));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(85.00m, result.Subtotal);
+        _payments.Verify(
+            p => p.CreateIntentAsync(85.00m, Email, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Empty_order_fails_and_never_charges()
+    {
+        var result = await BuildSut().ProcessAsync(Request());
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OrderFailureReason.InvalidRequest, result.Reason);
+        VerifyNeverCharged();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task Non_positive_quantity_fails_and_never_charges(int quantity)
+    {
+        var result = await BuildSut().ProcessAsync(Request(new OrderLine("BLZ", quantity)));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OrderFailureReason.InvalidRequest, result.Reason);
+        Assert.Equal("BLZ", result.Detail);
+        VerifyNeverCharged();
+    }
 }

@@ -11,7 +11,8 @@ namespace OrderHub.Ordering.Orders
         SchoolNotFound,
         ProductNotFound,
         OutOfStock,
-        PaymentDeclined
+        PaymentDeclined,
+        InvalidRequest
     }
 
 }
