@@ -10,7 +10,7 @@ confirmation queueing.
 - `OrderHub.Ordering` —> domain core (orders, pricing, payments, confirmations)
 - `OrderHub.Ordering.Infrastructure` —> Dapper/SQL access, HTTP payment gateway, DI wiring
 - `OrderHub.Ordering.Tests` —> xUnit tests
-- - `OrderHub.Web`-> ASP.NET Core Razor Pages host, including the rebuilt confirm-order page
+- `OrderHub.Web`-> ASP.NET Core Razor Pages host, including the rebuilt confirm-order page
 
 
 ## Build & test
